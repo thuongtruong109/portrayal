@@ -1,101 +1,163 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [image, setImage] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState("ryo.png");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  useEffect(() => {
+    if (!image) return;
+
+    const url = URL.createObjectURL(image);
+    setImageUrl(url);
+
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [image]);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen py-12">
+      <h1 className="font-semibold text-2xl">Shot on Stone.</h1>
+      <input
+        id="upload"
+        hidden
+        type="file"
+        onChange={(e) => {
+          const files = e.target.files;
+          if (!files) return;
+
+          setImage(files.item(0));
+        }}
+      />
+      <label
+        htmlFor="upload"
+        className="px-6 py-2.5 bg-black text-white/80 font-medium text-sm mt-4 cursor-pointer rounded-full"
+        style={{
+          boxShadow:
+            "inset 6px 6px 8px rgba(255, 255, 255, 0.4), inset 6px 2px 8px rgba(255, 255, 255, 0.6), inset -3px -2px 4px rgba(255, 255, 255, 0.6), inset -2px -6px 12px rgba(0, 0, 0, 0.6)",
+        }}
+      >
+        Upload
+      </label>
+      <Stone imageUrl={imageUrl} />
     </div>
+  );
+}
+
+function Stone({ imageUrl }: { imageUrl: string }) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [vector, setVector] = useState([0, 0]);
+  const [useBackground, setUseBackground] = useState(true);
+
+  useEffect(() => {
+    const onMove = (event: MouseEvent) => {
+      const element = svgRef.current;
+      if (!element) return;
+
+      const rect = element.getBoundingClientRect();
+      setVector([event.x - rect.left, event.y - rect.top]);
+    };
+
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
+  return (
+    <svg
+      ref={svgRef}
+      width="1000"
+      height="1000"
+      className="max-w-screen"
+      onClick={() => {
+        setUseBackground((prev) => !prev);
+      }}
+    >
+      <defs>
+        <filter id="spotlight">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.1"
+            numOctaves="4"
+            result="noise"
+          />
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="0 0 0 0 0
+              0 0 0 0 0
+              0 0 0 0 0
+              1 1 1 0.2 0"
+            result="alpha_map"
+          />
+
+          <feComposite
+            in="alpha_map"
+            in2="noise"
+            operator="arithmetic"
+            result="alpha_map_with_noise"
+            k2="1"
+            k3="-0.2"
+          />
+          <feDiffuseLighting
+            in="alpha_map_with_noise"
+            result="light"
+            lightingColor="rgba(250,250,250,1)"
+            diffuseConstant={1}
+          >
+            <fePointLight x={vector[0]} y={vector[1]} z="30" />
+          </feDiffuseLighting>
+
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.1"
+            numOctaves="4"
+            result="turbulence"
+          />
+          <feDisplacementMap
+            in2="turbulence"
+            in="SourceGraphic"
+            result="source_with_displacement"
+            scale="50"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+
+          <feComposite
+            in="SourceGraphic"
+            in2="light"
+            operator="arithmetic"
+            result="out1"
+            k1="1"
+          />
+
+          <feDropShadow
+            dx={(-vector[0] * 12) / 1000}
+            dy={(-vector[1] * 12) / 1000}
+            stdDeviation="15"
+            floodColor="black"
+            floodOpacity="1"
+          />
+        </filter>
+      </defs>
+
+      <g filter="url(#spotlight)">
+        {useBackground && (
+          <rect
+            x="10%"
+            y="10%"
+            width="80%"
+            height="80%"
+            rx="20"
+            stroke="0"
+            style={{
+              fill: "gray",
+            }}
+          />
+        )}
+        <image href={imageUrl} x="10%" y="10%" width="80%" height="80%" />
+      </g>
+    </svg>
   );
 }
