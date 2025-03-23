@@ -1,52 +1,6 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 
-export default function Home() {
-  const [image, setImage] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState("ryo.png");
-
-  useEffect(() => {
-    if (!image) return;
-
-    const url = URL.createObjectURL(image);
-    setImageUrl(url);
-
-    return () => {
-      URL.revokeObjectURL(url);
-    };
-  }, [image]);
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-12">
-      <h1 className="font-semibold text-2xl">Shot on Stone.</h1>
-      <input
-        id="upload"
-        hidden
-        type="file"
-        onChange={(e) => {
-          const files = e.target.files;
-          if (!files) return;
-
-          setImage(files.item(0));
-        }}
-      />
-      <label
-        htmlFor="upload"
-        className="px-6 py-2.5 bg-black text-white/80 font-medium text-sm mt-4 cursor-pointer rounded-full"
-        style={{
-          boxShadow:
-            "inset 6px 6px 8px rgba(255, 255, 255, 0.4), inset 6px 2px 8px rgba(255, 255, 255, 0.6), inset -3px -2px 4px rgba(255, 255, 255, 0.6), inset -2px -6px 12px rgba(0, 0, 0, 0.6)",
-        }}
-      >
-        Upload
-      </label>
-      <Stone imageUrl={imageUrl} />
-    </div>
-  );
-}
-
-function Stone({ imageUrl }: { imageUrl: string }) {
+export default function Stone({ imageUrl }: { imageUrl: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [vector, setVector] = useState([0, 0]);
   const [useBackground, setUseBackground] = useState(true);
@@ -156,7 +110,14 @@ function Stone({ imageUrl }: { imageUrl: string }) {
             }}
           />
         )}
-        <image href={imageUrl} x="10%" y="10%" width="80%" height="80%" />
+        <image
+          href={imageUrl}
+          x="10%"
+          y="10%"
+          width="80%"
+          height="80%"
+          className="object-cover"
+        />
       </g>
     </svg>
   );
